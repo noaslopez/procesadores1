@@ -1,5 +1,5 @@
-//  TeamNumber , TeamMember1-name , TeamMember2-name
-//  email for TeamMember1 ,  email for TeamMember2
+//  116 , Noa López Fernández , Guillermo Gonnzález Avilés
+//  100522230@alumnos.uc3m.es ,  100522146@alumnos.uc3m.es
 
 #include <ctype.h>
 #include <stdio.h>
