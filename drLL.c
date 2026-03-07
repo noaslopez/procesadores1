@@ -12,6 +12,10 @@
 
 void ParseYourGrammar () ; 		/// Dummy Parser
 void ParseAxiom () ;			/// Prototype for forward reference 		
+void ParseExpresion();
+void ParseExpresionResto();
+void ParseParametro();
+void ParseOperador();
 
 struct s_tokens {
 	int token ;					// Here we store the current token/literal 
@@ -129,8 +133,76 @@ void MatchSymbol (int expected_token)
 											/// The actual recomendation is to use MatchSymbol in the code rather than theese macros
 
 
+
+
+// Parametro ::= Expresion
+void ParseParametro() {
+    ParseExpresion(); // A parameter is simply an expression
+}
+
+// ExpresionResto ::= Operador Parametro Parametro
+//                  | = Variable Parametro
+//                  | ? Parametro Parametro Parametro
+void ParseExpresionResto() {
+    // Check FIRST sets to determine which production to take
+    if (tokens.token == T_OPERATOR) { // FIRST(Operador) = {+, -, *, /}
+        ParseOperador();            // Parse the operator
+        ParseParametro();           // Parse the first operand/argument
+        ParseParametro();           // Parse the second operand/argument
+    } else if (tokens.token == '=') { // FIRST(=) = {=}
+        MatchSymbol('=');           // Consume '='
+        MatchSymbol(T_VARIABLE);    // Parse the variable (left-hand side of assignment)
+        ParseParametro();           // Parse the value/expression to assign
+    } else if (tokens.token == '?') { // FIRST(?) = {?}
+        MatchSymbol('?');           // Consume '?'
+        ParseParametro();           // Parse the condition expression
+        ParseParametro();           // Parse the 'true' branch expression
+        ParseParametro();           // Parse the 'false' branch expression
+    } else {
+        rd_syntax_error(-1, tokens.token,
+                        "Expected OPERATOR, '=', or '?' for ExpresionResto, but got %d\n");
+    }
+}
+
+// Expresion ::= ( ExpresionResto ) | Numero | Variable
+void ParseExpresion() {
+    if (tokens.token == '(') {
+        MatchSymbol('(');           // Consume '('
+        ParseExpresionResto();      // Parse the content inside the parentheses
+        MatchSymbol(')');           // Consume ')'
+    } else if (tokens.token == T_NUMBER) {
+        // Numero ::= 0 | 1 | ... | 9
+        MatchSymbol(T_NUMBER);      // Consume the number token
+    } else if (tokens.token == T_VARIABLE) {
+        // Variable ::= Letra SufijoVariable
+        // The lexer gives T_VARIABLE and puts the 2-char name in tokens.variable_name
+        MatchSymbol(T_VARIABLE);    // Consume the variable token
+    } else {
+        rd_syntax_error(-1, tokens.token,
+                        "Expected '(', NUMBER, or VARIABLE for Expresion, but got %d\n");
+    }
+}
+
+
 void ParseYourGrammar ()
 {
+  ParseExpresion();
+}
+
+
+
+
+
+// Operador ::= + | - | * | /
+void ParseOperador() {
+    // The lexer returns T_OPERATOR for these.
+    if (tokens.token == T_OPERATOR) {
+        // The actual operator character (+, -, *, /) is in tokens.token_val
+        MatchSymbol(T_OPERATOR); // Consume the operator token
+    } else {
+        rd_syntax_error(-1, tokens.token,
+                        "Expected OPERATOR (+, -, *, /) for Operador, but got %d\n");
+    }
 }
 
 
@@ -144,7 +216,6 @@ void ParseAxiom ()
 		rd_syntax_error (-1, tokens.token, "-- Unexpected Token (Expected:%d=None, Read:%d) at end of Parsing\n") ;
 	}
 }
-
 
 int main (int argc, char **argv) 
 {
