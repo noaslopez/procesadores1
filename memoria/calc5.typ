@@ -127,3 +127,35 @@ Letra           ::= A | B | ... | Z
 
 Fin             ::= \n
 `
+
+
+-----------------------------------
+
+
+`
+Axioma          ::= Expresion Fin
+
+Expresion       ::= ( ExpresionResto )
+                  | Numero
+                  | Variable
+
+ExpresionResto  ::= Operador Parametro Parametro
+                  | = Variable Parametro
+                  | ? Variable Variable Variable
+
+Parametro       ::= Expresion
+
+Operador        ::= + | - | * | /
+
+Numero          ::= 0 | 1 | ... | 9
+
+Variable        ::= Letra
+                  | Letra SufijoVariable
+
+SufijoVariable  ::= Letra
+                  | Numero
+
+Letra           ::= A | B | ... | Z
+
+Fin             ::= \n
+`
