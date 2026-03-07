@@ -83,7 +83,7 @@
 	</production>
 	<production>
 		<left>V</left>
-		<right>LL</right>
+		<right>LR</right>
 	</production>
 	<production>
 		<left>L</left>
@@ -96,5 +96,13 @@
 	<production>
 		<left>L</left>
 		<right>a</right>
+	</production>
+	<production>
+		<left>R</left>
+		<right>L</right>
+	</production>
+	<production>
+		<left>R</left>
+		<right>N</right>
 	</production>
 </structure>
