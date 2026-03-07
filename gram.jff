@@ -7,7 +7,7 @@
 	</production>
 	<production>
 		<left>E</left>
-		<right>(OPP)</right>
+		<right>(R)</right>
 	</production>
 	<production>
 		<left>E</left>
@@ -98,15 +98,23 @@
 		<right>a</right>
 	</production>
 	<production>
-		<left>R</left>
+		<left>S</left>
 		<right>L</right>
 	</production>
 	<production>
-		<left>R</left>
+		<left>S</left>
 		<right>N</right>
 	</production>
 	<production>
-		<left>O</left>
-		<right>=</right>
+		<left>R</left>
+		<right>=VP</right>
+	</production>
+	<production>
+		<left>R</left>
+		<right>OPP</right>
+	</production>
+	<production>
+		<left>R</left>
+		<right>?VVV</right>
 	</production>
 </structure>
