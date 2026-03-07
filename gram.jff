@@ -105,4 +105,8 @@
 		<left>R</left>
 		<right>N</right>
 	</production>
+	<production>
+		<left>O</left>
+		<right>=</right>
+	</production>
 </structure>

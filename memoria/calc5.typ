@@ -50,7 +50,7 @@ Tras la realización de dicha gramática, hemos planteado los cambios necesarios
 Axioma ::= Expresion Fin 
 Expresion ::= ( Operador Parametro Parametro ) | Numero | Variable
 Parametro ::= Expresion
-Operador ::= + | - |_* | /
+Operador ::= + | - | * | /
 Numero ::= 0 | 1 | ... | 9
 Variable ::=  Letra 
 Letra ::= A | B | ... | Z
@@ -68,10 +68,29 @@ Fin ::= \n
 Axioma ::= Expresion Fin 
 Expresion ::= ( Operador Parametro Parametro ) | Numero | Variable
 Parametro ::= Expresion
-Operador ::= + | - |_* | /
+Operador ::= + | - | * | /
 Numero ::= 0 | 1 | ... | 9
-Variable ::=  Letra RestoVariable
-RestoVariable ::= Letra | Numero
+Variable ::=  Letra SufijoVariable
+SufijoVariable ::= Letra | Numero
+Letra ::= A | B | ... | Z
+Fin ::= \n
+`
+
+
+
+
+-----------------------------------
+
+
+`
+Axioma ::= Expresion Fin 
+Expresion ::= ( ExpresionResto ) | Numero | Variable
+ExpresionResto ::= Operador Parametro Parametro | = Variable Parametro
+Parametro ::= Expresion
+Operador ::= + | - | * | /
+Numero ::= 0 | 1 | ... | 9
+Variable ::=  Letra SufijoVariable
+SufijoVariable ::= Letra | Numero
 Letra ::= A | B | ... | Z
 Fin ::= \n
 `
