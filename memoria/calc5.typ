@@ -32,11 +32,10 @@ En este apartado, explicaremos de manera extendida el desarrollo de la gramátic
 En primer lugar, partimos de las especificaciones iniciales presentadas en el enunciado, generando una gramática inicial que aún no reconoce variables y con expresiones aritméticas con paréntesis. 
 En este caso, la gramática inicial que hemos generado es la siguiente:
 `
-Axioma ::= Expresion Fin 
-Expresion ::= ( Operador Parametro Parametro ) | Numero
-Parametro ::= Expresion 
-Operador ::= + | - |_* | /
-Numero ::= 0 | 1 | ... | 9
+Axioma      ::= Expresion Fin 
+Expresion   ::= ( operador Parametro Parametro ) 
+              | numero
+Parametro   ::= Expresion 
 Fin ::= \n
 `
 Como se puede ver, hemos decidido seguir de manera literal las especificaciones del enunciado y traducirlas directamente a la gramática. No obstante, la gramática presentada no es la primera que hemos desarrollado, pues antes de ella, se planteó otra version en la que el axioma se definía como `Axioma ::= Expresion \n` , describiendo directamente el no terminal de finalización de la sentecia. Sin embargo, esta versión producía errores al realizar la verificación de gramática LL(1). 
@@ -44,118 +43,61 @@ Como se puede ver, hemos decidido seguir de manera literal las especificaciones 
 En la siguiente imagen, se presentan los resultados de dicha verificación con la gramática inicial presentada con anterioridad:
 #image("img/verif1.png", width: 100%) 
 
-Tras la realización de dicha gramática, hemos planteado los cambios necesarios en la misma de modo que la gramática reconozca también el uso de variables. En primer lugar, modificamos la gramática de modo que esta permita variables de una sola letra mayúscula. Por consecuente, resulta la siguiente gramática también LL(1): 
+Tras la realización de dicha gramática, hemos planteado los cambios necesarios en la misma de modo que la gramática reconozca también el uso de variables. Notesé, que por la definición del parser que se presenta en _drLL.c_ el nombre dado a las variables se entiende como un token, por lo que no se debe gestionar directamente desde la gramática. 
+
+De este modo, añadimos reglas que nos permitan realizar asignaciones de variables para que estas puedan tomar valores. Para ello, hemos añadido un nuevo no terminal llamado ExpresionesResto, que define aquellas expresiones que no son un solo número o una sola variable. Así, se define ExpresionResto o bien como cualquier operación entre dos parámetros o bien como cualquier asignación de un parámetro a una variable. Por consecuente, resulta la siguiente gramática también LL(1): 
 
 `
-Axioma ::= Expresion Fin 
-Expresion ::= ( Operador Parametro Parametro ) | Numero | Variable
-Parametro ::= Expresion
-Operador ::= + | - | * | /
-Numero ::= 0 | 1 | ... | 9
-Variable ::=  Letra 
-Letra ::= A | B | ... | Z
-Fin ::= \n
-`
-
-
-
-
-
------------------------------------
-
-
-`
-Axioma ::= Expresion Fin 
-Expresion ::= ( Operador Parametro Parametro ) | Numero | Variable
-Parametro ::= Expresion
-Operador ::= + | - | * | /
-Numero ::= 0 | 1 | ... | 9
-Variable ::=  Letra SufijoVariable
-SufijoVariable ::= Letra | Numero
-Letra ::= A | B | ... | Z
-Fin ::= \n
-`
-
-
-
-
------------------------------------
-
-
-`
-Axioma ::= Expresion Fin 
-Expresion ::= ( ExpresionResto ) | Numero | Variable
-ExpresionResto ::= Operador Parametro Parametro | = Variable Parametro
-Parametro ::= Expresion
-Operador ::= + | - | * | /
-Numero ::= 0 | 1 | ... | 9
-Variable ::=  Letra SufijoVariable
-SufijoVariable ::= Letra | Numero
-Letra ::= A | B | ... | Z
-Fin ::= \n
-`
-
-
-
-
------------------------------------
-
-
-`
-Axioma          ::= Expresion Fin
-
-Expresion       ::= ( ExpresionResto )
-                  | Numero
-                  | Variable
-
-ExpresionResto  ::= Operador Parametro Parametro
-                  | = Variable Parametro
-                  | ? Variable Variable Variable
-
+Axioma          ::= Expresion Fin 
+Expresion       ::= ( ExpresionResto ) 
+                  | numero 
+                  | variable
+ExpresionResto  ::= operador Parametro Parametro 
+                  | = variable Parametro
 Parametro       ::= Expresion
-
-Operador        ::= + | - | * | /
-
-Numero          ::= 0 | 1 | ... | 9
-
-Variable        ::= Letra SufijoVariable
-
-SufijoVariable  ::= Letra
-                  | Numero
-
-Letra           ::= A | B | ... | Z
-
 Fin             ::= \n
 `
 
+En la siguiente imagen, se puede ver la verificación de esta gramática con JFLAP, lo que garantiza que la ampliación incremental de la gramática no ha afectado a los requisitos de tipo establecidos para la misma, garantizando que es adecuada para un Parser Descendente. 
 
------------------------------------
+#image("img/verif2.png", width: 100%) 
 
+Una vez hemos finalizado el uso de variables en nuestra gramática, hemos continuado con las expecificaciones extendidas que se incluyen en el enunciado de la práctica. De este modo, hemos modificado la gramática de modo que permita el uso de asignaciones ternarias y de operadores condicionales ternarios. 
+
+Para ello, hemos añadido dos asigaciones nuevas a la definción de ExpresionResto. La primera de ellas que amplia las asignaciones para permitir asignaciones ternarias, permitiendo que una variable pueda tomar el valor de la comparación de dos parámetros o solo de una expresión, haciendo que Ternario pueda ser nada u otros dos parámetros. La segunda, que define los condicionales, introducidos por el operador ? y seguidos por tres expresiones, dos que se comparan y una que se devuelve. 
 
 `
 Axioma          ::= Expresion Fin
-
 Expresion       ::= ( ExpresionResto )
-                  | Numero
-                  | Variable
-
-ExpresionResto  ::= Operador Parametro Parametro
-                  | = Variable Parametro
-                  | ? Variable Variable Variable
-
+                  | numero
+                  | variable
+ExpresionResto  ::= operador Parametro Parametro
+                  | = variable Parametro Ternario
+                  | ? Expresion Expresion Expresion
 Parametro       ::= Expresion
-
-Operador        ::= + | - | * | /
-
-Numero          ::= 0 | 1 | ... | 9
-
-Variable        ::= Letra
-                  | Letra SufijoVariable
-
-SufijoVariable  ::= Letra
-                  | Numero
-
-Letra           ::= A | B | ... | Z
-
+Ternario        ::= Parametro Parametro 
+                  | λ
 Fin             ::= \n
 `
+
+En la siguiente imagen, se muestra el resultado de la comprobación realizada con JFLAP para esta última versión y que garantiza que la gramática sigue siendo LL(1) con este incremento: 
+#image("img/verif3.png", width: 100%)
+
+Por último, hemos eliminado el no terminal Parametro, ya que simplemente realiza una reasignación del no terminal Expresión, por lo que no era útil en este caso ni nos ayudaba a eliminar problemas o ambigüedades en la gramática. De este modo, la gramática final resultante es la siguiente: 
+
+`
+Axioma          ::= Expresion Fin
+Expresion       ::= ( ExpresionResto )
+                  | numero
+                  | variable
+ExpresionResto  ::= operador Expresion Expresion
+                  | = variable Expresion Ternario
+                  | ? Expresion Expresion Expresion
+Ternario        ::= Expresion Expresion 
+                  | λ
+Fin             ::= \n
+`
+
+Que también cumple con todos los requisitos y especificaciones mencionadas en el enunciado de la práctica y que sigue siendo una gramática LL(1) como se muestra en la siguiente imagen:
+#image("img/verif4.png", width: 100%)
+
