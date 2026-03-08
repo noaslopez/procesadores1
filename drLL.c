@@ -14,8 +14,8 @@ void ParseYourGrammar () ; 		/// Dummy Parser
 void ParseAxiom () ;			/// Prototype for forward reference 		
 void ParseExpresion();
 void ParseExpresionResto();
-void ParseParametro();
-void ParseOperador();
+void ParseTernario();
+void ParseOperador(); 
 
 struct s_tokens {
 	int token ;					// Here we store the current token/literal 
@@ -134,33 +134,43 @@ void MatchSymbol (int expected_token)
 
 
 
-
-// Parametro ::= Expresion
-void ParseParametro() {
-    ParseExpresion(); // A parameter is simply an expression
-}
-
-// ExpresionResto ::= Operador Parametro Parametro
-//                  | = Variable Parametro
-//                  | ? Parametro Parametro Parametro
+// ExpresionResto ::= Operador Expresion Expresion
+//                  | = Variable Ternario
+//                  | ? Expresion Expresion Expresion
 void ParseExpresionResto() {
     // Check FIRST sets to determine which production to take
     if (tokens.token == T_OPERATOR) { // FIRST(Operador) = {+, -, *, /}
         ParseOperador();            // Parse the operator
-        ParseParametro();           // Parse the first operand/argument
-        ParseParametro();           // Parse the second operand/argument
+        ParseExpresion();           // Parse the first operand/argument
+        printf('%c', tokens.token_val);
+        ParseExpresion();           // Parse the second operand/argument
     } else if (tokens.token == '=') { // FIRST(=) = {=}
         MatchSymbol('=');           // Consume '='
         MatchSymbol(T_VARIABLE);    // Parse the variable (left-hand side of assignment)
-        ParseParametro();           // Parse the value/expression to assign
+        printf('%s', tokens.old_var_name);
+        printf("=");
+        ParseExpresion();           // Parse the value/expression to assign
+        ParseTernario();            // Allow the case of Ternarios 
     } else if (tokens.token == '?') { // FIRST(?) = {?}
         MatchSymbol('?');           // Consume '?'
-        ParseParametro();           // Parse the condition expression
-        ParseParametro();           // Parse the 'true' branch expression
-        ParseParametro();           // Parse the 'false' branch expression
+        ParseExpresion();           // Parse the condition expression
+        printf("?");
+        ParseExpresion();           // Parse the 'true' branch expression
+        printf(":");
+        ParseExpresion();           // Parse the 'false' branch expression
     } else {
         rd_syntax_error(-1, tokens.token,
                         "Expected OPERATOR, '=', or '?' for ExpresionResto, but got %d\n");
+    }
+}
+
+// Ternario ::= Expresion Expresion | lambda 
+void ParseTernario(){
+    if (tokens.token == '(' ||
+        tokens.token == T_NUMBER ||
+        tokens.token == T_VARIABLE){ // case where it goes to Expresion
+        ParseExpresion();
+        ParseExpresion();
     }
 }
 
@@ -168,15 +178,19 @@ void ParseExpresionResto() {
 void ParseExpresion() {
     if (tokens.token == '(') {
         MatchSymbol('(');           // Consume '('
+        printf('(');
         ParseExpresionResto();      // Parse the content inside the parentheses
         MatchSymbol(')');           // Consume ')'
+        printf(')');
     } else if (tokens.token == T_NUMBER) {
         // Numero ::= 0 | 1 | ... | 9
         MatchSymbol(T_NUMBER);      // Consume the number token
+        printf('%d', tokens.number);
     } else if (tokens.token == T_VARIABLE) {
         // Variable ::= Letra SufijoVariable
         // The lexer gives T_VARIABLE and puts the 2-char name in tokens.variable_name
         MatchSymbol(T_VARIABLE);    // Consume the variable token
+        printf('%s', tokens.variable_name);
     } else {
         rd_syntax_error(-1, tokens.token,
                         "Expected '(', NUMBER, or VARIABLE for Expresion, but got %d\n");
@@ -188,9 +202,6 @@ void ParseYourGrammar ()
 {
   ParseExpresion();
 }
-
-
-
 
 
 // Operador ::= + | - | * | /
