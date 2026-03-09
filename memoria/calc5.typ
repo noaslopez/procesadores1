@@ -5,7 +5,7 @@
   subject: "Procesadores del Lenguaje",
   year: (25, 26),
   project: "Parser Descendente Recursivo",
-  title: "Entrega 1.1",
+  title: "Entrega 1",
   group: 81,
   team: 116,
   authors: (
@@ -100,4 +100,15 @@ Fin             ::= \n
 
 Que también cumple con todos los requisitos y especificaciones mencionadas en el enunciado de la práctica y que sigue siendo una gramática LL(1) como se muestra en la siguiente imagen:
 #image("img/verif4.png", width: 100%)
+
+= Desarrollo del Parser
+
+Para continuar con el desarrollo de la práctica, hemos modificado y adaptado el código del fichero _ddLR.c_ para que se ajuste a la gramática que hemos diseñado con anterioridad. 
+
+En primer lugar, hemos generado las funciones parse que corresponden a cada uno de los no terminales de la gramática. A continuación, especificaremos el desarrollo de cada una de las mismas:
+- *ParseAxioma()*: En esta función, hemos añadido una llamada a la función ParseExpresion() para que se realice el proceso de análisis sintáctico de la expresión y concuerde exactamente con la regla de derivación Axioma ::= Expresion Fin , que hemos definido con anterioridad. Además hemos incluido la verificación del token final de salto de linea, pues es el funcionamiento que se pide en la práctica. 
+- *ParseExpresion()*: Esta función resulta algo más compleja que la anterior, pues debe tratar varias relgas de derivación que definen las diferentes posibles maneras de definir una expresión. Por ello, hemos estructurado un if que comprueba el primer token leido. En el caso de que se corresponda con un número o variable, asegura que estos se corresponden con los tokens que definen números y variables llamando a las funciones MatchSymbol() correspondientes. Por otro lado, se compueba si el token leido es un paréntesis de apertura, en cuyo caso debemos llamar a la función ParseExpresionResto() y posteriormente comprobamos el paréntesis de cierre. 
+- *ParseExpresionResto()*: El funcionamiento de esta función es muy similar al definido en el caso anterior. Hemos comprobado el primer token leido de modo que, partiendo de su valor, decidimos cual de las reglas de derivación se corresponden con la expresión, llamando en cada una a las funciones Parse que corresponden a los no terminales de las reglas. 
+- *ParseTernario()*: En dicha función, comprobamos si hay algún caracter por leer que se corresponda con el inicio de una expresión. En caso afirmativo, procedemos con la llamada a las funciones de Parse de Expresión, no obstante, al también generar lambda, si no se da el inicio de una expresión, simplemente no se hará nada, de modo que se representa regla de derivación ExpresionResto ::= λ.
+- *ParseOperador()*: En esta función, simplemente se comprueba que el token leido se corresponda con alguno de los operadores definidos en la gramática, llamando a la función MatchSymbol() para cada uno de ellos.
 
