@@ -142,12 +142,12 @@ void ParseExpresionResto() {
     if (tokens.token == T_OPERATOR) { // FIRST(Operador) = {+, -, *, /}
         ParseOperador();            // Parse the operator
         ParseExpresion();           // Parse the first operand/argument
-        printf('%c', tokens.token_val);
+        printf("%c", tokens.token_val);
         ParseExpresion();           // Parse the second operand/argument
     } else if (tokens.token == '=') { // FIRST(=) = {=}
         MatchSymbol('=');           // Consume '='
         MatchSymbol(T_VARIABLE);    // Parse the variable (left-hand side of assignment)
-        printf('%s', tokens.old_var_name);
+        printf("%s", tokens.old_var_name);
         printf("=");
         ParseExpresion();           // Parse the value/expression to assign
         ParseTernario();            // Allow the case of Ternarios 
@@ -178,19 +178,19 @@ void ParseTernario(){
 void ParseExpresion() {
     if (tokens.token == '(') {
         MatchSymbol('(');           // Consume '('
-        printf('(');
+        printf("(");
         ParseExpresionResto();      // Parse the content inside the parentheses
         MatchSymbol(')');           // Consume ')'
-        printf(')');
+        printf(")");
     } else if (tokens.token == T_NUMBER) {
         // Numero ::= 0 | 1 | ... | 9
         MatchSymbol(T_NUMBER);      // Consume the number token
-        printf('%d', tokens.number);
+        printf("%d", tokens.number);
     } else if (tokens.token == T_VARIABLE) {
         // Variable ::= Letra SufijoVariable
         // The lexer gives T_VARIABLE and puts the 2-char name in tokens.variable_name
         MatchSymbol(T_VARIABLE);    // Consume the variable token
-        printf('%s', tokens.variable_name);
+        printf("%s", tokens.variable_name);
     } else {
         rd_syntax_error(-1, tokens.token,
                         "Expected '(', NUMBER, or VARIABLE for Expresion, but got %d\n");
