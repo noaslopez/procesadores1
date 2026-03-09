@@ -134,15 +134,17 @@ void MatchSymbol (int expected_token)
 
 
 
-// ExpresionResto ::= Operador Expresion Expresion
-//                  | = Variable Ternario
-//                  | ? Expresion Expresion Expresion
+// ExpresionResto  ::= operador Expresion Expresion
+//                   | = variable Expresion Ternario
+//                   | ? Expresion Expresion Expresion
+
 void ParseExpresionResto() {
     // Check FIRST sets to determine which production to take
     if (tokens.token == T_OPERATOR) { // FIRST(Operador) = {+, -, *, /}
-        ParseOperador();            // Parse the operator
+        char operator_char = tokens.token_val;
+        MatchSymbol(T_OPERATOR);            // Parse the operator
         ParseExpresion();           // Parse the first operand/argument
-        printf("%c", tokens.token_val);
+        printf("%c", operator_char);
         ParseExpresion();           // Parse the second operand/argument
     } else if (tokens.token == '=') { // FIRST(=) = {=}
         MatchSymbol('=');           // Consume '='
@@ -169,7 +171,9 @@ void ParseTernario(){
     if (tokens.token == '(' ||
         tokens.token == T_NUMBER ||
         tokens.token == T_VARIABLE){ // case where it goes to Expresion
+        printf("?"); 
         ParseExpresion();
+        printf(":");
         ParseExpresion();
     }
 }
@@ -184,13 +188,16 @@ void ParseExpresion() {
         printf(")");
     } else if (tokens.token == T_NUMBER) {
         // Numero ::= 0 | 1 | ... | 9
+        int saved_number = tokens.number;
         MatchSymbol(T_NUMBER);      // Consume the number token
-        printf("%d", tokens.number);
+        printf("%d", saved_number);
     } else if (tokens.token == T_VARIABLE) {
         // Variable ::= Letra SufijoVariable
         // The lexer gives T_VARIABLE and puts the 2-char name in tokens.variable_name
+        char saved_var_name[8];
+        strcpy(saved_var_name, tokens.variable_name);
         MatchSymbol(T_VARIABLE);    // Consume the variable token
-        printf("%s", tokens.variable_name);
+        printf("%s", saved_var_name);
     } else {
         rd_syntax_error(-1, tokens.token,
                         "Expected '(', NUMBER, or VARIABLE for Expresion, but got %d\n");
