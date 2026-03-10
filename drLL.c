@@ -144,21 +144,21 @@ void ParseExpresionResto() {
         char operator_char = tokens.token_val;
         MatchSymbol(T_OPERATOR);            // Parse the operator
         ParseExpresion();           // Parse the first operand/argument
-        printf("%c", operator_char);
+        printf(" %c ", operator_char);
         ParseExpresion();           // Parse the second operand/argument
     } else if (tokens.token == '=') { // FIRST(=) = {=}
         MatchSymbol('=');           // Consume '='
         MatchSymbol(T_VARIABLE);    // Parse the variable (left-hand side of assignment)
         printf("%s", tokens.old_var_name);
-        printf("=");
+        printf(" = ");
         ParseExpresion();           // Parse the value/expression to assign
         ParseTernario();            // Allow the case of Ternarios 
     } else if (tokens.token == '?') { // FIRST(?) = {?}
         MatchSymbol('?');           // Consume '?'
         ParseExpresion();           // Parse the condition expression
-        printf("?");
+        printf(" ? ");
         ParseExpresion();           // Parse the 'true' branch expression
-        printf(":");
+        printf(" : ");
         ParseExpresion();           // Parse the 'false' branch expression
     } else {
         rd_syntax_error(-1, tokens.token,
@@ -171,9 +171,9 @@ void ParseTernario(){
     if (tokens.token == '(' ||
         tokens.token == T_NUMBER ||
         tokens.token == T_VARIABLE){ // case where it goes to Expresion
-        printf("?"); 
+        printf(" ? "); 
         ParseExpresion();
-        printf(":");
+        printf(" : ");
         ParseExpresion();
     }
 }

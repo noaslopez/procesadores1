@@ -26,9 +26,18 @@
   language: "es"
 )
 
-= Diseño de gramática LL(1)
+= Elementos léxicos proporcionados por rd_lex
+La función rd_lex proporciona todo lo necesario para nuestro Parser.
+Se encarga de almacenar el valor asociado a múltiples elementos en tokens.
+Tenemos por tanto: números (de uno o más dígitos), variables (de un carácter o de un carácter seguido por otro carácter o por un número),
+los operadores aritméticos propuestos en la práctica (+, -, \*, /),
+cualquier otro carácter (en este caso utilizado para '(', ')', '?', '=', '\\n')
+y por último el EOF. Además, rd_lex ignora los espacios en blanco y similares.
+
+= Gramática
 En este apartado, explicaremos de manera extendida el desarrollo de la gramática LL(1) que nos ha permitido representar la sintaxis de expresiones aritméticas en forma prefija. Pues este, es el primer paso para la realización de la entrega, ya que el objetivo prinicpal de la misma es la traducción desde esta forma a forma infija. 
 
+== Diseño de gramática inicial
 En primer lugar, partimos de las especificaciones iniciales presentadas en el enunciado, generando una gramática inicial que aún no reconoce variables y con expresiones aritméticas con paréntesis. 
 En este caso, la gramática inicial que hemos generado es la siguiente:
 `
@@ -43,6 +52,7 @@ Como se puede ver, hemos decidido seguir de manera literal las especificaciones 
 En la siguiente imagen, se presentan los resultados de dicha verificación con la gramática inicial presentada con anterioridad:
 #image("img/verif1.png", width: 100%) 
 
+== Desarrollo de gramática final LL(1)
 Tras la realización de dicha gramática, hemos planteado los cambios necesarios en la misma de modo que la gramática reconozca también el uso de variables. Notesé, que por la definición del parser que se presenta en _drLL.c_ el nombre dado a las variables se entiende como un token, por lo que no se debe gestionar directamente desde la gramática. 
 
 De este modo, añadimos reglas que nos permitan realizar asignaciones de variables para que estas puedan tomar valores. Para ello, hemos añadido un nuevo no terminal llamado ExpresionesResto, que define aquellas expresiones que no son un solo número o una sola variable. Así, se define ExpresionResto o bien como cualquier operación entre dos parámetros o bien como cualquier asignación de un parámetro a una variable. Por consecuente, resulta la siguiente gramática también LL(1): 
@@ -101,14 +111,42 @@ Fin             ::= \n
 Que también cumple con todos los requisitos y especificaciones mencionadas en el enunciado de la práctica y que sigue siendo una gramática LL(1) como se muestra en la siguiente imagen:
 #image("img/verif4.png", width: 100%)
 
+== Niveles léxico y sintáctico
+
+Hay una clara distinción entre los niveles léxicos y sintácticos, nuestra gramática hace clara referencia de los elementos que no se descomponen más en la gramática sintáctica (terminales),
+estos son los elementosa nivel léxico. El resto (los no terminales) son elementos a nivel sintáctico.
+
 = Desarrollo del Parser
 
 Para continuar con el desarrollo de la práctica, hemos modificado y adaptado el código del fichero _ddLR.c_ para que se ajuste a la gramática que hemos diseñado con anterioridad. 
 
 En primer lugar, hemos generado las funciones parse que corresponden a cada uno de los no terminales de la gramática. A continuación, especificaremos el desarrollo de cada una de las mismas:
-- *ParseAxioma()*: En esta función, hemos añadido una llamada a la función ParseExpresion() para que se realice el proceso de análisis sintáctico de la expresión y concuerde exactamente con la regla de derivación Axioma ::= Expresion Fin , que hemos definido con anterioridad. Además hemos incluido la verificación del token final de salto de linea, pues es el funcionamiento que se pide en la práctica. 
+- *ParseAxioma()*: En esta función, hemos añadido una llamada a la función ParseExpresion() para que se realice el proceso de análisis sintáctico de la expresión y concuerde exactamente con la regla de derivación Axioma ::= Expresion Fin , que hemos definido con anterioridad. Además hemos incluido la verificación del token final de salto de linea, pues es el funcionamiento que se pide en la práctica.
+
 - *ParseExpresion()*: Esta función resulta algo más compleja que la anterior, pues debe tratar varias relgas de derivación que definen las diferentes posibles maneras de definir una expresión. Por ello, hemos estructurado un if que comprueba el primer token leido. En el caso de que se corresponda con un número o variable, asegura que estos se corresponden con los tokens que definen números y variables llamando a las funciones MatchSymbol() correspondientes. Por otro lado, se compueba si el token leido es un paréntesis de apertura, en cuyo caso debemos llamar a la función ParseExpresionResto() y posteriormente comprobamos el paréntesis de cierre. 
+
 - *ParseExpresionResto()*: El funcionamiento de esta función es muy similar al definido en el caso anterior. Hemos comprobado el primer token leido de modo que, partiendo de su valor, decidimos cual de las reglas de derivación se corresponden con la expresión, llamando en cada una a las funciones Parse que corresponden a los no terminales de las reglas. 
 - *ParseTernario()*: En dicha función, comprobamos si hay algún caracter por leer que se corresponda con el inicio de una expresión. En caso afirmativo, procedemos con la llamada a las funciones de Parse de Expresión, no obstante, al también generar lambda, si no se da el inicio de una expresión, simplemente no se hará nada, de modo que se representa regla de derivación ExpresionResto ::= λ.
+
 - *ParseOperador()*: En esta función, simplemente se comprueba que el token leido se corresponda con alguno de los operadores definidos en la gramática, llamando a la función MatchSymbol() para cada uno de ellos.
 
+En todas estas funciones, la estructura es similar, primero hacemos match de el primer símbolo para ver que tipo de expresión es. Después, solemos llamar a las funciones necesarias para parsear el resto de la expresión, incluida la función print necesaria para imprimir en pantalla.
+
+= Pruebas de traducción y evaluación realizadas
+Para esta práctica había que comprobar la correcta funcionalidad de nuestro parser en diversas situaciones.
+Como se indica en el enunciado, hemos elaborado una batería de tests extensa para probar todos los casos relevantes que se requieren. Aquí están los más notables:
+\
+#align(left)[*(= a1 (= b (= cb (+ 2 3)))) \u{21D2} (a1 = (b = (cb = (2 + 3))))*]
+En esta expresión se comprueban las dos primeras especificaciones extendidas.
+Hay variables correctamente asignadas de un carácter, de dos carácteres y de u carácter más un digito.
+Además, también se observa el correcto funcionamiento de las asignaciones encadenadas.
+\
+#align(left)[*(= a (+ (= b 2) (= c 3))) \u{21D2} (a = ((b = 2) + (c = 3)))*]
+Las expresiones compuestas con las que se puede operar en C o LISP (para LISP sería reemplazar '=' por 'setq') funcionan perfectamente con nuestro parser y se obtienen los resultados deseados.
+\
+#align(left)[**]
+// TODO
+// (= a1 b2 c3 d4)
+#align(left)[*(? (= a 1) (+ b 1) (- b 1)) \u{21D2} ((a = 1) ? (b + 1) : (b - 1))*]
+#align(left)[**]
+#align(left)[**]
